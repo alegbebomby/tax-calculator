@@ -1,6 +1,8 @@
+import { ConfigObject } from "./types/ConfigObject";
 import { defaultPublicHolidays, defaultTimeConfig } from "./types/defaultValues";
 import { TimeConfig } from "./types/TimeConfig";
 import Vehicle from "./types/vehicle";
+
 
 enum TollFreeVehicles {
     Emergency,
@@ -21,9 +23,10 @@ function isTollFreeVehicle(vehicle: Vehicle): boolean {
     return (Object.values(TollFreeVehicles) as string[]).includes(vehicleType);
 }
 
-function getTollFee(date: Date, vehicle: Vehicle, timeConfig: Array<TimeConfig> = defaultTimeConfig, publicHolidays: Array<string> = defaultPublicHolidays): number {
-    if (isTollFreeDate(date, publicHolidays) || isTollFreeVehicle(vehicle)) return 0;
-    for (let t of timeConfig) {
+function getTollFee(date: Date, vehicle: Vehicle, config: ConfigObject): number {
+  
+    if (isTollFreeDate(date, config.publicHolidays) || isTollFreeVehicle(vehicle)) return 0;
+    for (let t of config.timeConfig) {
         if (withInTime(date, t.timeInterval)) {
             return t.amount
         }
@@ -46,7 +49,7 @@ function withInTime(date: Date, dateString: string): boolean {
     return startDate <= date && date <= endDate
 }
 
-function isTollFreeDate(date: Date, publicHolidays: Array<string> = defaultPublicHolidays): boolean {
+function isTollFreeDate(date: Date, publicHolidays: Array<string> ): boolean {
     const month: number = date.getMonth()
     const day: number = date.getDay();
     const dayOfMonth: number = date.getDate();
@@ -74,15 +77,14 @@ function getPreviousDay(date: Date = new Date()) {
     previous.setDate(date.getDate() - 1);
     return previous;
 }
-export function getTax(vehicle: Vehicle, dates: Date[]): number {
-    let intervalStart: Date = dates[0];
-    let intervalDayStart: Date = dates[0];
-    let firstFee = getTollFee(intervalStart, vehicle);
+export function getTax(vehicle: Vehicle, dates: Date[], config: ConfigObject): number {
+     let intervalStart: Date = dates[0];
+    let firstFee = getTollFee(intervalStart, vehicle, config);
     let totalFeePerHour: number = firstFee;
     const amountPerDay:any ={}
     for (let i = 1; i < dates.length; i++) {
         const date: Date = dates[i];
-        let nextFee: number = getTollFee(date, vehicle);
+        let nextFee: number =  getTollFee(date, vehicle, config);
         let diffInMillies = date.getTime() - intervalStart.getTime();
         console.log(diffInMillies)
         let minutes = diffInMillies / 1000 / 60;
@@ -104,7 +106,7 @@ export function getTax(vehicle: Vehicle, dates: Date[]): number {
     let total = 0 
     for(let totalPerday in amountPerDay ){
         const sum  = amountPerDay[totalPerday].reduce((pervious: any, present: any) => {
-            return pervious >= 60?  60 : pervious + present;
+            return pervious >= config.maxAmountPerDay?  config.maxAmountPerDay : pervious + present;
         } ,0)
         console.log(sum)
         total+=sum
