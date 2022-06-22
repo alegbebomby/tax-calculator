@@ -26,7 +26,6 @@ app.post('/calculateTax', async (req: Request, res: Response) => {
     const config: ConfigObject = await (await fetch('https://gist.githubusercontent.com/alegbebomby/0abd56ab9c2413e5b7412e1448879b23/raw/33de1e70b35f07f3416392d2c1522e9aa2372528/gistfile1.txt')).json() as ConfigObject;
     const dates: Date[] = datesString.map(d => new Date(d))
     const vechicleObj = new Vehicle(vehicle)
-    console.log(vechicleObj.getVehicleType())
     const totalTax = await getTax(vechicleObj, dates, config)
     res.json({ totalTax: totalTax, vehicle: vechicleObj.getVehicleType() });
 });

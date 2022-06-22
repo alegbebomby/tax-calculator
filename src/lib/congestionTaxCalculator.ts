@@ -67,7 +67,6 @@ function isTollFreeDate(date: Date, publicHolidays: Array<string> ): boolean {
 
         if (month == dayBeforeDateMonth && dayOfMonth == dayBeforeDateMonthdayOfMonth) return true
     }
-    console.log('not public')
     return false
 
 }
@@ -86,7 +85,7 @@ export function getTax(vehicle: Vehicle, dates: Date[], config: ConfigObject): n
         const date: Date = dates[i];
         let nextFee: number =  getTollFee(date, vehicle, config);
         let diffInMillies = date.getTime() - intervalStart.getTime();
-        console.log(diffInMillies)
+
         let minutes = diffInMillies / 1000 / 60;
         if (minutes <= 60) {
             if (nextFee > totalFeePerHour) {
@@ -102,13 +101,11 @@ export function getTax(vehicle: Vehicle, dates: Date[], config: ConfigObject): n
             amountPerDay[dates[i].toDateString()] = [totalFeePerHour]
         }
     }
-    console.log(amountPerDay)
     let total = 0 
     for(let totalPerday in amountPerDay ){
         const sum  = amountPerDay[totalPerday].reduce((pervious: any, present: any) => {
             return pervious >= config.maxAmountPerDay?  config.maxAmountPerDay : pervious + present;
         } ,0)
-        console.log(sum)
         total+=sum
     }
 
